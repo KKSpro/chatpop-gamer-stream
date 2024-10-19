@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, X } from 'lucide-react';
+import { MessageSquare, X, Bot } from 'lucide-react';
 import ChatMessage from './ChatMessage';
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: number;
@@ -17,6 +18,7 @@ const ChatbotPopup: React.FC = () => {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -57,6 +59,14 @@ const ChatbotPopup: React.FC = () => {
     setTimeout(() => streamResponse(botResponse), 500);
   };
 
+  const handleClosePopup = () => {
+    setIsOpen(false);
+    toast({
+      title: "Chat closed",
+      description: "You can reopen the chat anytime by clicking the bot icon.",
+    });
+  };
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {!isOpen && (
@@ -64,17 +74,20 @@ const ChatbotPopup: React.FC = () => {
           onClick={() => setIsOpen(true)}
           className="rounded-full w-16 h-16 bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
         >
-          <MessageSquare size={24} />
+          <Bot size={24} />
         </Button>
       )}
       {isOpen && (
         <div className="bg-white rounded-lg shadow-xl w-80 sm:w-96 flex flex-col h-[500px]">
           <div className="flex justify-between items-center p-4 bg-blue-500 text-white rounded-t-lg">
-            <h3 className="font-semibold">Gaming Support</h3>
+            <h3 className="font-semibold flex items-center">
+              <Bot size={20} className="mr-2" />
+              Gaming Support
+            </h3>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsOpen(false)}
+              onClick={handleClosePopup}
               className="text-white hover:bg-blue-600 rounded-full"
             >
               <X size={20} />
