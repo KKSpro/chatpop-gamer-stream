@@ -72,34 +72,34 @@ const ChatbotPopup: React.FC = () => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="rounded-full w-16 h-16 bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+          className="rounded-full w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
         >
-          <Bot size={24} />
+          <Bot size={20} />
         </Button>
       )}
       {isOpen && (
-        <div className="bg-white rounded-lg shadow-xl w-80 sm:w-96 flex flex-col h-[500px]">
-          <div className="flex justify-between items-center p-4 bg-blue-500 text-white rounded-t-lg">
-            <h3 className="font-semibold flex items-center">
-              <Bot size={20} className="mr-2" />
+        <div className="bg-white rounded-lg shadow-xl w-64 sm:w-80 flex flex-col h-[400px]">
+          <div className="flex justify-between items-center p-3 bg-blue-500 text-white rounded-t-lg">
+            <h3 className="font-semibold text-sm flex items-center">
+              <Bot size={16} className="mr-2" />
               Gaming Support
             </h3>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleClosePopup}
-              className="text-white hover:bg-blue-600 rounded-full"
+              className="text-white hover:bg-blue-600 rounded-full h-6 w-6"
             >
-              <X size={20} />
+              <X size={16} />
             </Button>
           </div>
-          <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
+          <ScrollArea className="flex-grow p-3" ref={scrollAreaRef}>
             {messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
             ))}
-            {isStreaming && <div className="text-gray-500 animate-pulse">Bot is typing...</div>}
+            {isStreaming && <div className="text-gray-500 animate-pulse text-xs">Bot is typing...</div>}
           </ScrollArea>
-          <div className="p-4 border-t">
+          <div className="p-3 border-t">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -112,9 +112,9 @@ const ChatbotPopup: React.FC = () => {
                 placeholder="Type your message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="flex-grow"
+                className="flex-grow text-sm"
               />
-              <Button type="submit" disabled={isStreaming}>
+              <Button type="submit" disabled={isStreaming} size="sm">
                 Send
               </Button>
             </form>
