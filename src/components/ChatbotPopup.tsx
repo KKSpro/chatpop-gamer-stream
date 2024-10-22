@@ -12,6 +12,12 @@ interface Message {
   isUser: boolean;
 }
 
+const starterQuestions = [
+  "How do I level up faster?",
+  "What are the best weapons in the game?",
+  "Can you explain the crafting system?",
+];
+
 const ChatbotPopup: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -26,10 +32,10 @@ const ChatbotPopup: React.FC = () => {
     }
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (input.trim() === '') return;
+  const handleSendMessage = (text: string = input) => {
+    if (text.trim() === '') return;
 
-    const userMessage: Message = { id: Date.now(), text: input, isUser: true };
+    const userMessage: Message = { id: Date.now(), text, isUser: true };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
 
@@ -78,7 +84,7 @@ const ChatbotPopup: React.FC = () => {
         </Button>
       )}
       {isOpen && (
-        <div className="bg-white rounded-lg shadow-xl w-64 sm:w-80 flex flex-col h-[400px]">
+        <div className="bg-white rounded-lg shadow-xl w-80 sm:w-96 flex flex-col h-[500px]">
           <div className="flex justify-between items-center p-3 bg-blue-500 text-white rounded-t-lg">
             <h3 className="font-semibold text-sm flex items-center">
               <Bot size={16} className="mr-2" />
@@ -94,6 +100,22 @@ const ChatbotPopup: React.FC = () => {
             </Button>
           </div>
           <ScrollArea className="flex-grow p-3" ref={scrollAreaRef}>
+            {messages.length === 0 && (
+              <div className="text-gray-500 text-sm mb-4">
+                <p className="mb-2">Here are some questions you can ask:</p>
+                {starterQuestions.map((question, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    className="mb-2 w-full justify-start"
+                    onClick={() => handleSendMessage(question)}
+                  >
+                    {question}
+                  </Button>
+                ))}
+              </div>
+            )}
             {messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
             ))}
