@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, X, Bot } from 'lucide-react';
+import { Bot, X } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from '@tanstack/react-query';
 
 interface Message {
   id: number;
@@ -17,34 +16,46 @@ interface StarterQuestionsResponse {
   display: string[];
 }
 
-const fetchStarterQuestions = async (): Promise<StarterQuestionsResponse> => {
-  const response = await fetch('https://www.duppy.io/api/starter-questions');
-  if (!response.ok) {
-    throw new Error('Failed to fetch starter questions');
-  }
-  return response.json();
-};
-
 const ChatbotPopup: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [starterQuestions, setStarterQuestions] = useState<string[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [questionError, setQuestionError] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const { data: starterQuestionsData, isLoading, error } = useQuery<StarterQuestionsResponse>({
-    queryKey: ['starterQuestions'],
-    queryFn: fetchStarterQuestions,
-    retry: 3,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  useEffect(() => {
+    if (isOpen && starterQuestions.length === 0 && !questionError) {
+      fetchStarterQuestions();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const fetchStarterQuestions = async () => {
+    setIsLoadingQuestions(true);
+    setQuestionError(null);
+    try {
+      const response = await fetch('https://www.duppy.io/api/starter-questions');
+      if (!response.ok) {
+        throw new Error('Failed to fetch starter questions');
+      }
+      const data: StarterQuestionsResponse = await response.json();
+      setStarterQuestions(data.display);
+    } catch (error) {
+      console.error('Error fetching starter questions:', error);
+      setQuestionError('Failed to load starter questions. Please try again later.');
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
 
   const handleSendMessage = (text: string = input) => {
     if (text.trim() === '') return;
@@ -116,14 +127,14 @@ const ChatbotPopup: React.FC = () => {
           <ScrollArea className="flex-grow p-3" ref={scrollAreaRef}>
             {messages.length === 0 && (
               <div className="text-gray-500 text-sm mb-4">
-                {isLoading ? (
+                {isLoadingQuestions ? (
                   <p>Loading starter questions...</p>
-                ) : error ? (
-                  <p>Error loading starter questions. Please try again later.</p>
+                ) : questionError ? (
+                  <p>{questionError}</p>
                 ) : (
                   <>
                     <p className="mb-2">Here are some questions you can ask:</p>
-                    {starterQuestionsData && starterQuestionsData.display.map((question: string, index: number) => (
+                    {starterQuestions.map((question, index) => (
                       <Button
                         key={index}
                         variant="outline"
