@@ -36,6 +36,8 @@ const ChatbotPopup: React.FC = () => {
   const { data: starterQuestionsData, isLoading, error } = useQuery<StarterQuestionsResponse>({
     queryKey: ['starterQuestions'],
     queryFn: fetchStarterQuestions,
+    retry: 3,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   useEffect(() => {
