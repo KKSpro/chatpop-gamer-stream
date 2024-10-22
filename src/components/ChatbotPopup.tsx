@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, X, Bot } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from '@tanstack/react-query';
 
 interface Message {
   id: number;
@@ -12,11 +13,13 @@ interface Message {
   isUser: boolean;
 }
 
-const starterQuestions = [
-  "How do I level up faster?",
-  "What are the best weapons in the game?",
-  "Can you explain the crafting system?",
-];
+const fetchStarterQuestions = async () => {
+  const response = await fetch('https://www.duppy.io/api/starter-questions');
+  if (!response.ok) {
+    throw new Error('Failed to fetch starter questions');
+  }
+  return response.json();
+};
 
 const ChatbotPopup: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +28,11 @@ const ChatbotPopup: React.FC = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const { data: starterQuestions, isLoading, error } = useQuery({
+    queryKey: ['starterQuestions'],
+    queryFn: fetchStarterQuestions,
+  });
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -102,18 +110,26 @@ const ChatbotPopup: React.FC = () => {
           <ScrollArea className="flex-grow p-3" ref={scrollAreaRef}>
             {messages.length === 0 && (
               <div className="text-gray-500 text-sm mb-4">
-                <p className="mb-2">Here are some questions you can ask:</p>
-                {starterQuestions.map((question, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="mb-2 w-full justify-start"
-                    onClick={() => handleSendMessage(question)}
-                  >
-                    {question}
-                  </Button>
-                ))}
+                {isLoading ? (
+                  <p>Loading starter questions...</p>
+                ) : error ? (
+                  <p>Error loading starter questions. Please try again later.</p>
+                ) : (
+                  <>
+                    <p className="mb-2">Here are some questions you can ask:</p>
+                    {starterQuestions && starterQuestions.map((question: string, index: number) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="mb-2 w-full justify-start"
+                        onClick={() => handleSendMessage(question)}
+                      >
+                        {question}
+                      </Button>
+                    ))}
+                  </>
+                )}
               </div>
             )}
             {messages.map((message) => (
