@@ -13,7 +13,11 @@ interface Message {
   isUser: boolean;
 }
 
-const fetchStarterQuestions = async () => {
+interface StarterQuestionsResponse {
+  display: string[];
+}
+
+const fetchStarterQuestions = async (): Promise<StarterQuestionsResponse> => {
   const response = await fetch('https://www.duppy.io/api/starter-questions');
   if (!response.ok) {
     throw new Error('Failed to fetch starter questions');
@@ -29,7 +33,7 @@ const ChatbotPopup: React.FC = () => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const { data: starterQuestions, isLoading, error } = useQuery({
+  const { data: starterQuestionsData, isLoading, error } = useQuery<StarterQuestionsResponse>({
     queryKey: ['starterQuestions'],
     queryFn: fetchStarterQuestions,
   });
@@ -117,7 +121,7 @@ const ChatbotPopup: React.FC = () => {
                 ) : (
                   <>
                     <p className="mb-2">Here are some questions you can ask:</p>
-                    {starterQuestions && starterQuestions.map((question: string, index: number) => (
+                    {starterQuestionsData && starterQuestionsData.display.map((question: string, index: number) => (
                       <Button
                         key={index}
                         variant="outline"
